@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/template.schema.json
+# ViaVersion: newer clients on older servers. Needs no settings.
+schema: 1
+
+match:
+  modrinth:
+    project_id: P1OZGk5p
+    loaders: [paper, folia, velocity]
+  spigot:
+    resource_id: 19254 # external download on Spigot, so Modrinth is preferred
+  prefer: modrinth
+
+meta:
+  enabled: true
+  maintainer: "your-name"
+  tested_with: "5.12.2" # automated install test on Paper 26.3
+  updated: 2026-11-16
+
+requirements:
+  software: [paper, purpur, folia, velocity]
+
+steps:
+  - action: install
+    target: main
+  - action: restart
+
+uninstall:
+  - action: delete
+    paths: [plugins/ViaVersion]
+    ask: true

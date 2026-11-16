@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "templates": [
+    {
+      "id": "discordsrv",
+      "path": "templates/discordsrv/template.yaml",
+      "sha256": "86d5a7dc8b72356c963f2d5d847fd0445c4c09e6ab3a898ceb97314e4c91f08a",
+      "tested_with": "1.30.5",
+      "software": [
+        "paper",
+        "purpur",
+        "spigot",
+        "folia"
+      ],
+      "mc": null,
+      "files": []
+    },
+    {
+      "id": "luckperms",
+      "path": "templates/luckperms/template.yaml",
+      "sha256": "b8698ccc257ce2ea3ac50352817e963ec02ba4766d8ddbabe6feb4114102aea3",
+      "tested_with": "v5.5.71-bukkit",
+      "software": [
+        "paper",
+        "purpur",
+        "spigot",
+        "folia"
+      ],
+      "mc": null,
+      "files": []
+    },
+    {
+      "id": "simple-voice-chat",
+      "path": "templates/simple-voice-chat/template.yaml",
+      "sha256": "7a009506aa9fe6b2b1a07cdff9d038475bce39640d49406ba4f7840e78e15ff8",
+      "tested_with": "bukkit-2.6.25",
+      "software": [
+        "paper",
+        "purpur",
+        "spigot",
+        "folia"
+      ],
+      "mc": null,
+      "files": []
+    },
+    {
+      "id": "viaversion",
+      "path": "templates/viaversion/template.yaml",
+      "sha256": "c5c5f17b1512178b098b879f7caffaa8fc39d7613b101d541abbf6480f7ca64c",
+      "tested_with": "5.12.2",
+      "software": [
+        "paper",
+        "purpur",
+        "folia",
+        "velocity"
+      ],
+      "mc": null,
+      "files": []
+    }
+  ],
+  "modrinth": {
+    "9eGKb6K1": "simple-voice-chat",
+    "P1OZGk5p": "viaversion",
+    "UmLGoGij": "discordsrv",
+    "Vebnzrzj": "luckperms"
+  },
+  "spigot": {
+    "18494": "discordsrv",
+    "19254": "viaversion",
+    "28140": "luckperms"
+  }
+}

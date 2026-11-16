@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=../../schema/template.schema.json
+# DiscordSRV: bridges the Minecraft chat with a Discord channel.
+# Config keys checked against DiscordSRV/DiscordSRV (master, src/main/resources/config/en.yml):
+# BotToken, Channels: {"global": "<id>"}.
+schema: 1
+
+match:
+  modrinth:
+    project_id: UmLGoGij
+    loaders: [paper, purpur, spigot, folia]
+  spigot:
+    resource_id: 18494 # external download on Spigot, so Modrinth is preferred
+  prefer: modrinth
+
+meta:
+  enabled: true
+  maintainer: "your-name"
+  tested_with: "1.30.5" # automated install test on Paper 26.3
+  updated: 2026-11-16
+
+requirements:
+  software: [paper, purpur, spigot, folia]
+
+options:
+  - key: bot_token
+    type: secret
+    label: Bot token
+    description: From the Discord Developer Portal under "Bot" → "Reset Token".
+    required: true
+
+  - key: channel_id
+    type: text
+    label: Channel ID
+    description: Right-click the channel → "Copy Channel ID" (developer mode required).
+    placeholder: "123456789012345678"
+    pattern: "^[0-9]{17,20}$"
+    required: true
+
+steps:
+  - action: install
+    target: main
+  - action: first_start
+    wait_for: plugins/DiscordSRV/config.yml
+    timeout: 5m
+  - action: config
+    file: plugins/DiscordSRV/config.yml
+    mode: merge
+    values:
+      BotToken: "{{ options.bot_token }}"
+      Channels.global: "{{ options.channel_id }}"
+  - action: restart
+
+uninstall:
+  - action: delete
+    paths: [plugins/DiscordSRV]
+    ask: true
+
+test:
+  # Invalid token: the test only checks that installation and config steps work.
+  options:
+    bot_token: "test-token"
+    channel_id: "100000000000000000"

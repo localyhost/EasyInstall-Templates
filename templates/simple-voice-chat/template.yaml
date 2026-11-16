@@ -1,0 +1,66 @@
+# yaml-language-server: $schema=../../schema/template.schema.json
+# Simple Voice Chat: proximity voice chat over its own UDP port.
+# Config keys checked against henkelmax/simple-voice-chat (branch 26.3, common/…/config/ServerConfig.java):
+# port (default 24454), max_voice_distance. File path confirmed by the install test.
+schema: 1
+
+match:
+  modrinth:
+    project_id: 9eGKb6K1
+    loaders: [paper, purpur, spigot, folia]
+
+meta:
+  enabled: true
+  maintainer: "your-name"
+  tested_with: "bukkit-2.6.25" # automated install test on Paper 26.3
+  updated: 2026-11-16
+
+requirements:
+  software: [paper, purpur, spigot, folia]
+
+options:
+  - key: voice_port
+    type: allocation
+    label: Voice chat port
+    description: Player clients send their voice to this UDP port.
+    protocol: udp
+    mode: select_or_create
+    prefer_port: 24454
+    exclude_primary: true
+    unique: true
+    label_on_create: Voice Chat
+    required: true
+
+  - key: voice_distance
+    type: slider
+    label: Range
+    description: Players hear each other up to this distance.
+    min: 8
+    max: 128
+    step: 4
+    unit: blocks
+    default: 48
+
+steps:
+  - action: allocate
+    option: voice_port
+  - action: install
+    target: main
+  - action: first_start
+    wait_for: plugins/voicechat/voicechat-server.properties
+    timeout: 5m
+  - action: config
+    file: plugins/voicechat/voicechat-server.properties
+    format: properties
+    mode: merge
+    values:
+      port: "{{ options.voice_port.port }}"
+      max_voice_distance: "{{ options.voice_distance }}"
+  - action: restart
+
+uninstall:
+  - action: release
+    option: voice_port
+  - action: delete
+    paths: [plugins/voicechat]
+    ask: true

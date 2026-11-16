@@ -1,0 +1,141 @@
+# yaml-language-server: $schema=../../schema/template.schema.json
+# LuckPerms: permission management with H2 (local) or MySQL.
+# Config paths checked against LuckPerms/LuckPerms (master, bukkit/src/main/resources/config.yml).
+schema: 1
+
+match:
+  modrinth:
+    project_id: Vebnzrzj
+    loaders: [paper, folia, spigot]
+  spigot:
+    resource_id: 28140
+  prefer: modrinth
+
+meta:
+  enabled: true
+  maintainer: "your-name"
+  tested_with: "v5.5.71-bukkit" # automated install test on Paper 26.3
+  updated: 2026-11-16
+
+requirements:
+  software: [paper, purpur, spigot, folia]
+
+groups:
+  - id: storage
+    label: Storage
+    icon: database
+  - id: setup
+    label: Setup
+    icon: users
+
+options:
+  - key: storage
+    type: radio
+    label: Where should permissions be stored?
+    group: storage
+    default: h2
+    options:
+      - value: h2
+        label: Local (H2)
+        description: No setup needed. Ideal for a single server.
+        icon: hard-drive
+      - value: mysql
+        label: MySQL / MariaDB
+        description: For several servers that share the same permissions.
+        icon: database
+
+  - key: db_host
+    type: text
+    label: Database host
+    group: storage
+    placeholder: db.example.com
+    required: true
+    show_when: { field: storage, is: mysql }
+
+  - key: db_port
+    type: number
+    label: Database port
+    group: storage
+    default: 3306
+    min: 1
+    max: 65535
+    show_when: { field: storage, is: mysql }
+
+  - key: db_name
+    type: text
+    label: Database name
+    group: storage
+    default: minecraft
+    required: true
+    show_when: { field: storage, is: mysql }
+
+  - key: db_user
+    type: text
+    label: User
+    group: storage
+    required: true
+    show_when: { field: storage, is: mysql }
+
+  - key: db_password
+    type: secret
+    label: Password
+    group: storage
+    required: true
+    show_when: { field: storage, is: mysql }
+
+  - key: default_groups
+    type: multiselect
+    label: Create these groups right away
+    group: setup
+    default: []
+    options:
+      - { value: vip, label: VIP }
+      - { value: builder, label: Builder }
+      - { value: moderator, label: Moderator }
+      - { value: admin, label: Admin }
+
+steps:
+  - action: install
+    target: main
+  - action: first_start
+    wait_for: plugins/LuckPerms/config.yml
+    timeout: 5m
+  - action: config
+    name: Storage method
+    file: plugins/LuckPerms/config.yml
+    mode: merge
+    values:
+      storage-method: "{{ options.storage }}"
+  - action: config
+    name: Database credentials
+    when: { field: storage, is: mysql }
+    file: plugins/LuckPerms/config.yml
+    mode: merge
+    values:
+      data.address: "{{ options.db_host }}:{{ options.db_port }}"
+      data.database: "{{ options.db_name }}"
+      data.username: "{{ options.db_user }}"
+      data.password: "{{ options.db_password }}"
+  - action: restart
+  - action: wait
+    log_contains: "[LuckPerms] Successfully enabled"
+    timeout: 3m
+  # script because one command per selected group is needed (fixed actions have no loops).
+  - action: script
+    name: Create default groups
+    when: { field: default_groups, not_empty: true }
+    runtime: js
+    timeout: 30s
+    code: |
+      for (const group of options.default_groups) {
+        console.run(`lp creategroup ${group}`);
+      }
+
+uninstall:
+  - action: delete
+    paths: [plugins/LuckPerms]
+    ask: true
+
+test:
+  options:
+    default_groups: [vip, admin]

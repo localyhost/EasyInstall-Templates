@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=../../schema/template.schema.json
+# Starter template. Copy this folder, rename it (folder name = template ID),
+# fill in the IDs and set enabled to true once the template has been tested.
+schema: 1
+
+match:
+  # Modrinth: the 8-character project ID, NOT the slug.
+  # Look it up at https://api.modrinth.com/v2/project/<slug> → "id".
+  modrinth:
+    project_id: XXXXXXXX
+  # Spigot: resource ID from the URL (…/resources/name.<ID>/).
+  # spigot:
+  #   resource_id: 1
+  # prefer: modrinth
+
+meta:
+  enabled: false
+  maintainer: "your-name"
+  tested_with: "0.0.0"
+  updated: 2026-11-16
+
+requirements:
+  software: [paper, purpur]
+  # mc: ">=1.21"
+  # java: ">=21"
+
+# groups:
+#   - id: general
+#     label: General
+
+# Only options a regular customer actually wants to change.
+# options:
+#   - key: example_switch
+#     type: switch
+#     label: Enable example
+#     default: true
+
+steps:
+  - action: install
+    target: main
+  # - action: first_start
+  #   wait_for: plugins/Example/config.yml
+  # - action: config
+  #   file: plugins/Example/config.yml
+  #   mode: merge
+  #   values:
+  #     some.key: "{{ options.example_switch }}"
+  # - action: restart
+
+uninstall:
+  - action: delete
+    paths: [plugins/Example]
+    ask: true

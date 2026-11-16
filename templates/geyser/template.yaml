@@ -1,0 +1,144 @@
+# yaml-language-server: $schema=../../schema/template.schema.json
+# Geyser: lets Bedrock players join Java servers, optionally with Floodgate.
+# Config paths checked against GeyserMC/Geyser (master, GeyserConfig.java + ConfigMigrations.java, 2026-11-16).
+schema: 1
+
+match:
+  modrinth:
+    project_id: wKkoqHrH
+    loaders: [paper, velocity]
+
+meta:
+  # Disabled: Floodgate for Paper/Velocity is neither on Modrinth (fabric/neoforge only)
+  # nor on SpigotMC, so the bundle cannot be installed. See notes.
+  enabled: false
+  maintainer: "your-name"
+  tested_with: "2.12.1-b1303" # TODO: verify – not tested by hand yet
+  updated: 2026-11-16
+  notes: >-
+    Floodgate for Paper/Velocity is only distributed via download.geysermc.org. The bundle below points
+    to the Modrinth project, which only has Fabric/NeoForge builds. Enable this template once the format
+    supports another source or Floodgate is published on Modrinth for Paper.
+    Since 2.12 Geyser uses NetherNet by default: signaling runs over TCP, game traffic over UDP on the same port.
+
+requirements:
+  software: [paper, purpur, velocity]
+
+groups:
+  - id: bedrock
+    label: Bedrock
+    icon: smartphone
+  - id: floodgate
+    label: Floodgate
+    icon: key
+
+options:
+  - key: bedrock_port
+    type: allocation
+    label: Bedrock port
+    description: Bedrock players connect through this port.
+    group: bedrock
+    # both instead of udp: NetherNet signaling needs TCP on the Bedrock port (GeyserConfig.java, bedrock.port).
+    protocol: both
+    mode: select_or_create
+    prefer_port: 19132
+    exclude_primary: true
+    unique: true
+    label_on_create: Geyser
+    required: true
+
+  - key: motd_passthrough
+    type: switch
+    label: Use the MOTD of the Java server
+    group: bedrock
+    default: true
+
+  - key: motd
+    type: text
+    label: Bedrock MOTD
+    group: bedrock
+    default: "Geyser"
+    max_length: 64
+    preview: mc-color
+    show_when: { field: motd_passthrough, is: false }
+
+  - key: floodgate_enabled
+    type: switch
+    label: Install Floodgate
+    description: Bedrock players can join without a Java account.
+    group: floodgate
+    default: true
+
+  - key: floodgate_prefix
+    type: text
+    label: Name prefix for Bedrock players
+    group: floodgate
+    default: "."
+    max_length: 16
+    enable_when: { field: floodgate_enabled, is: true }
+    disabled_hint: Only available with Floodgate.
+
+  - key: floodgate_off_hint
+    type: info
+    style: warning
+    label: Without Floodgate, Bedrock players need a Java account.
+    group: floodgate
+    show_when: { field: floodgate_enabled, is: false }
+
+bundle:
+  - id: floodgate
+    match:
+      modrinth:
+        project_id: bWrNNfkb # TODO: verify – Modrinth has no Paper/Velocity builds for this project
+    when: { field: floodgate_enabled, is: true }
+
+variants:
+  - when: { field: server.software, is: velocity }
+    replace:
+      "plugins/Geyser-Spigot": "plugins/Geyser-Velocity"
+
+steps:
+  - action: allocate
+    option: bedrock_port
+  - action: install
+    target: main
+  - action: install
+    target: bundle
+  - action: first_start
+    wait_for: plugins/Geyser-Spigot/config.yml
+    timeout: 5m
+  - action: config
+    name: Bedrock port and MOTD
+    file: plugins/Geyser-Spigot/config.yml
+    mode: merge
+    values:
+      bedrock.port: "{{ options.bedrock_port.port }}"
+      bedrock.clone-remote-port: false
+      motd.passthrough-motd: "{{ options.motd_passthrough }}"
+      motd.primary-motd: "{{ options.motd }}"
+  - action: config
+    name: Floodgate authentication
+    when: { field: bundle.floodgate, is: true }
+    file: plugins/Geyser-Spigot/config.yml
+    mode: merge
+    values:
+      java.auth-type: floodgate
+  - action: config
+    name: Floodgate prefix
+    when: { field: bundle.floodgate, is: true }
+    file: plugins/floodgate/config.yml
+    mode: merge
+    values:
+      username-prefix: "{{ options.floodgate_prefix }}"
+  - action: restart
+
+uninstall:
+  - action: release
+    option: bedrock_port
+  - action: delete
+    paths: [plugins/Geyser-Spigot]
+    ask: true
+  - action: delete
+    when: { field: bundle.floodgate, is: true }
+    paths: [plugins/floodgate]
+    ask: true
