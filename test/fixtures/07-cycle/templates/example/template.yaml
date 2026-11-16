@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/template.schema.json
+schema: 1
+match:
+  modrinth:
+    project_id: AAAAAAAA
+meta:
+  enabled: true
+  maintainer: "test"
+  tested_with: "1.0"
+options:
+  - { key: a, type: switch, label: A, show_when: { field: b, is: true } }
+  - { key: b, type: switch, label: B, enable_when: { field: a, is: true } }
+steps:
+  - action: install
+    target: main

@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../../schema/template.schema.json
+schema: 1
+match:
+  modrinth:
+    project_id: BBBBBBBB
+meta:
+  enabled: true
+  maintainer: "test"
+  tested_with: "1.0"
+steps:
+  - action: install
+    target: main

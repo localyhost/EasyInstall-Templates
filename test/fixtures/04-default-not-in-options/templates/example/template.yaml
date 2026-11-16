@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/template.schema.json
+schema: 1
+match:
+  modrinth:
+    project_id: AAAAAAAA
+meta:
+  enabled: true
+  maintainer: "test"
+  tested_with: "1.0"
+options:
+  - key: a
+    type: select
+    label: A
+    default: c
+    options: [{ value: x, label: X }, { value: y, label: Y }]
+steps:
+  - action: install
+    target: main
