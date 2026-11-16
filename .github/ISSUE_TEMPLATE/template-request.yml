@@ -1,0 +1,35 @@
+name: Template request
+description: Suggest an Easy Install template for another plugin
+title: "Template request: "
+labels: ["template-request"]
+body:
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin
+      description: Name of the plugin
+      placeholder: e.g. EssentialsX
+    validations:
+      required: true
+  - type: input
+    id: modrinth
+    attributes:
+      label: Modrinth link or project ID
+      placeholder: https://modrinth.com/plugin/…
+  - type: input
+    id: spigot
+    attributes:
+      label: SpigotMC link or resource ID
+      placeholder: https://www.spigotmc.org/resources/….12345/
+  - type: textarea
+    id: why
+    attributes:
+      label: What should the template do beyond "put the jar into plugins/"?
+      description: Ports, dependencies, config values customers usually want to change …
+    validations:
+      required: true
+  - type: textarea
+    id: docs
+    attributes:
+      label: Docs / default config
+      description: Links to the plugin's official docs or default config

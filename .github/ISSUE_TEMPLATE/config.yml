@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation (wiki)
+    url: https://github.com/localyhost/EasyInstall-Templates/wiki
+    about: Template format, panel integration and script API

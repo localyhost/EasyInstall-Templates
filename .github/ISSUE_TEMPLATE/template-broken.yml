@@ -1,0 +1,33 @@
+name: Template broken
+description: An existing template does not work (anymore)
+title: "Install script <id> is broken"
+labels: ["bug"]
+body:
+  - type: input
+    id: template
+    attributes:
+      label: Template ID
+      description: Folder name under templates/
+      placeholder: e.g. luckperms
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Plugin version, server software and MC version
+      placeholder: e.g. LuckPerms 5.5.71, Paper 26.3
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens?
+      description: Which step fails, what does the log say?
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Server log (excerpt)
+      description: Please remove tokens and passwords first.
+      render: text
