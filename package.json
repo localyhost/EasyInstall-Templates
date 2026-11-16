@@ -11,7 +11,7 @@
   "scripts": {
     "validate": "node tools/validate.mjs",
     "build": "node tools/build-index.mjs",
-    "test": "node --test test/",
+    "test": "node --test",
     "check-ids": "node tools/check-ids.mjs",
     "test-install": "node tools/test-install.mjs"
   },
