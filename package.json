@@ -1,0 +1,23 @@
+{
+  "name": "mc-easy-install-templates",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Panel-independent Easy Install templates for Minecraft plugins",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "validate": "node tools/validate.mjs",
+    "build": "node tools/build-index.mjs",
+    "test": "node --test test/",
+    "check-ids": "node tools/check-ids.mjs",
+    "test-install": "node tools/test-install.mjs"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "yaml": "^2.6.1"
+  }
+}
