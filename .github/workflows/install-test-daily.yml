@@ -1,0 +1,120 @@
+name: Install test (daily)
+
+# Tests all enabled templates every 24 hours and reports broken ones as issues.
+# One issue per template; it is closed automatically once the template works again.
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: install-test-daily
+  cancel-in-progress: false
+
+jobs:
+  install-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: actions/cache@v6
+        with:
+          path: test-results/cache
+          key: paper-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: paper-${{ runner.os }}-
+      - run: npm ci
+
+      - name: Install test
+        id: test
+        continue-on-error: true
+        run: npm run test-install -- --json test-results/report.json
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: install-test-logs
+          path: |
+            test-results/*.log
+            test-results/report.json
+          if-no-files-found: ignore
+
+      - name: Update issues
+        if: always()
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('node:fs');
+            const LABEL = 'install-test';
+            const titleFor = (id) => `Install script ${id} is broken`;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            if (!fs.existsSync('test-results/report.json')) {
+              core.setFailed('No report.json – the install test aborted before the first template.');
+              return;
+            }
+            const report = JSON.parse(fs.readFileSync('test-results/report.json', 'utf8'));
+
+            try {
+              await github.rest.issues.createLabel({ ...context.repo, name: LABEL, color: 'd73a4a', description: 'Automated install test fails' });
+            } catch (e) {
+              if (e.status !== 422) throw e; // 422 = label already exists
+            }
+
+            const open = await github.paginate(github.rest.issues.listForRepo, { ...context.repo, state: 'open', labels: LABEL, per_page: 100 });
+            const byTitle = new Map(open.map((i) => [i.title, i]));
+
+            const logTail = (file) => {
+              if (!fs.existsSync(file)) return '(no log)';
+              const lines = fs.readFileSync(file, 'utf8').split('\n').filter((l) => !/^\s+at /.test(l));
+              return lines.slice(-60).join('\n');
+            };
+
+            for (const entry of report) {
+              const issue = byTitle.get(titleFor(entry.id));
+              if (entry.status === 'failed') {
+                const body = [
+                  `The daily install test for **${entry.id}** (\`${entry.path}\`) failed.`,
+                  '',
+                  '**Error:**',
+                  '~~~~',
+                  entry.reason,
+                  '~~~~',
+                  entry.mcVersion ? `**Paper:** ${entry.mcVersion}` : '',
+                  `**Run:** ${runUrl} (full logs in the "install-test-logs" artifact)`,
+                  '',
+                  '<details><summary>Last log lines</summary>',
+                  '',
+                  '~~~~',
+                  logTail(entry.log),
+                  '~~~~',
+                  '</details>',
+                ].join('\n');
+                if (issue) {
+                  await github.rest.issues.createComment({ ...context.repo, issue_number: issue.number, body: `Still broken.\n\n${body}` });
+                } else {
+                  await github.rest.issues.create({ ...context.repo, title: titleFor(entry.id), labels: [LABEL], body });
+                }
+              } else if (entry.status === 'passed' && issue) {
+                await github.rest.issues.createComment({ ...context.repo, issue_number: issue.number, body: `Works again ✓ (${runUrl})` });
+                await github.rest.issues.update({ ...context.repo, issue_number: issue.number, state: 'closed', state_reason: 'completed' });
+              }
+            }
+
+      - name: Result
+        if: steps.test.outcome == 'failure'
+        run: |
+          echo "::error::At least one install script is broken – see issues labeled install-test."
+          exit 1
